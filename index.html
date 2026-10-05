@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>img2pdf - 이미지 PDF 변환기</title>
+  <meta name="description" content="서버 전송 없이 브라우저에서 안전하고 빠르게 여러 이미지를 하나의 PDF로 변환하는 웹 어플리케이션">
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- jsPDF 최신 UMD CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- SortableJS CDN (드래그 앤 드롭 순서 변경) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 헤더 영역 -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">📄</div>
+        <div>
+          <h1>img2pdf</h1>
+          <p class="subtitle">이미지를 고품질 PDF로 즉시 변환하세요</p>
+        </div>
+      </div>
+      <div class="privacy-badge" title="이미지가 외부 서버로 업로드되지 않고 사용자의 브라우저 내에서만 안전하게 처리됩니다.">
+        <span class="lock-icon">🔒</span> 100% 브라우저 로컬 변환 (서버 전송 없음)
+      </div>
+    </header>
+
+    <!-- 파일 업로드 드롭존 -->
+    <section class="dropzone-section">
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="이미지 파일 끌어다 놓기 또는 클릭하여 선택">
+        <input 
+          type="file" 
+          id="fileInput" 
+          multiple 
+          accept="image/jpeg, image/png, image/gif" 
+          class="hidden-input"
+        >
+        <div class="dropzone-content">
+          <div class="upload-icon">📁</div>
+          <h3>이미지 파일을 여기에 끌어다 놓거나 클릭하세요</h3>
+          <p class="upload-desc">여러 장의 이미지를 한 번에 선택할 수 있습니다.</p>
+          <span class="badge-formats">지원 형식: JPG, JPEG, PNG, GIF</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 툴바 및 컨트롤 영역 -->
+    <section id="toolbar" class="toolbar hidden">
+      <div class="toolbar-left">
+        <span id="imageCountBadge" class="count-badge">선택된 이미지: 0장</span>
+        <span class="guide-text">💡 카드를 마우스나 터치로 드래그하여 PDF 페이지 순서를 변경할 수 있습니다.</span>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- 페이지 방향/규격 최적화 옵션 -->
+        <div class="option-group">
+          <label for="orientationSelect">페이지 방향:</label>
+          <select id="orientationSelect" class="select-box">
+            <option value="auto" selected>✨ 자동 최적화 (가로/세로 이미지 맞춤)</option>
+            <option value="portrait">A4 세로 고정 (Portrait)</option>
+            <option value="landscape">A4 가로 고정 (Landscape)</option>
+            <option value="original">이미지 원본 비율 1:1 맞춤</option>
+          </select>
+        </div>
+
+        <!-- 페이지 여백 옵션 -->
+        <div class="option-group">
+          <label for="marginSelect">여백:</label>
+          <select id="marginSelect" class="select-box">
+            <option value="0">여백 없음 (0mm)</option>
+            <option value="10" selected>기본 여백 (10mm)</option>
+            <option value="20">넓은 여백 (20mm)</option>
+          </select>
+        </div>
+
+        <button type="button" id="addMoreBtn" class="btn btn-secondary">
+          <span class="btn-icon">➕</span> 이미지 추가
+        </button>
+        <button type="button" id="clearAllBtn" class="btn btn-outline-danger">
+          <span class="btn-icon">🗑️</span> 전체 삭제
+        </button>
+        <button type="button" id="convertBtn" class="btn btn-primary">
+          <span class="btn-icon">📥</span>
+          <span id="convertBtnText">PDF로 변환하기</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 썸네일 미리보기 리스트 그리드 -->
+    <section class="preview-section">
+      <div id="previewList" class="preview-grid" aria-live="polite">
+        <!-- 동적으로 미리보기 카드가 삽입되는 공간 -->
+      </div>
+
+      <!-- 이미지가 없을 때 표시되는 빈 상태 안내 -->
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">🖼️</div>
+        <p>변환할 이미지를 추가하면 여기에 미리보기가 표시됩니다.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- 변환 진행 상태 모달/오버레이 -->
+  <div id="loadingOverlay" class="loading-overlay hidden" aria-hidden="true">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h3 id="loadingTitle">PDF 변환 중...</h3>
+      <p id="loadingStatusText">이미지를 A4 페이지에 맞추어 렌더링하고 있습니다.</p>
+      <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
+      </div>
+      <span id="progressPercent" class="progress-percent">0%</span>
+    </div>
+  </div>
+
+  <!-- 스크립트 연결 -->
+  <script src="script.js"></script>
+</body>
+</html>
